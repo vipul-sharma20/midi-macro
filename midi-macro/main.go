@@ -60,7 +60,6 @@ func main() {
 			case ControlChange:
 				controlChangeHandler(midi_message)
 			}
-
 		}),
 	)
 
