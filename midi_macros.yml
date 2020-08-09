@@ -1,0 +1,31 @@
+keys:
+    - name: "36"  # MIDI controller key name
+      type: "button"
+      # command,arg1,arg2...
+      task: "open,-a,/Applications/Brave Browser.app"
+    - name: "37"
+      type: "button"
+      task: "/usr/bin/osascript,/path/to/task.scpt"
+    - name: "38"
+      type: "button"
+      task: ""
+    - name: "39"
+      task: ""
+    - name: "40"
+      task: ""
+    - name: "41"
+      task: ""
+    - name: "42"
+      task: ""
+    - name: "43"
+      task: ""
+
+    # Knobs
+    - name: "7"
+      type: "knob"
+      task: "volume"
+      max_value: 127
+    - name: "95"
+      type: "knob"
+      task: "brightness"
+      max_value: 127  # Max value of the knob/slider
