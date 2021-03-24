@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"gitlab.com/gomidi/midi"
@@ -30,8 +31,8 @@ type key struct {
 }
 
 type config struct {
-	Port uint  `yaml:"port"`
-	Keys []key `yaml:"keys"`
+	Port string `yaml:"port"`
+	Keys []key  `yaml:"keys"`
 }
 
 func (c config) getKey(name string) (key, error) {
@@ -67,8 +68,7 @@ func main() {
 		return
 	}
 
-	conf := getConf()
-	in, out := ins[conf.Port], outs[0]
+	in, out := getIn(ins), outs[0]
 
 	must(in.Open())
 	must(out.Open())
@@ -149,6 +149,26 @@ func getConf() *config {
 	}
 
 	return &conf
+}
+
+func getIn(ports []midi.In) (def midi.In) {
+	conf := getConf()
+	portIndex, err := strconv.Atoi(conf.Port)
+
+	if err == nil {
+		return ports[portIndex]
+	}
+
+	for _, in := range ports {
+		if strings.Contains(in.String(), conf.Port) {
+			return in
+		}
+	}
+
+	fmt.Printf("Failed to find port: %s\n", conf.Port)
+	os.Exit(1)
+
+	return
 }
 
 // Get task command
