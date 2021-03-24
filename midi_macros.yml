@@ -1,4 +1,4 @@
-port: 0
+port: "Arturia BeatStep"
 keys:
     - name: "36"  # MIDI controller key name
       type: "button"
