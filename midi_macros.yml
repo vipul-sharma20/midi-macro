@@ -1,3 +1,4 @@
+port: 0
 keys:
     - name: "36"  # MIDI controller key name
       type: "button"

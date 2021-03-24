@@ -21,13 +21,31 @@ func must(err error) {
 	}
 }
 
+type key struct {
+	Name     string   `yaml:"name"`
+	Aliases  []string `yaml:"aliases,flow"`
+	Type     string   `yaml:"type"`
+	Task     string   `yaml:"task"`
+	MaxValue uint8    `yaml:"max_value"`
+}
+
 type config struct {
-	Keys []struct {
-		Name     string `yaml:"name"`
-		Type     string `yaml:"type"`
-		Task     string `yaml:"task"`
-		MaxValue uint8  `yaml:"max_value"`
-	} `yaml:"keys"`
+	Port uint  `yaml:"port"`
+	Keys []key `yaml:"keys"`
+}
+
+func (c config) getKey(name string) (key, error) {
+	for _, key := range c.Keys {
+		if key.Name == name {
+			return key, nil
+		}
+		for _, alias := range key.Aliases {
+			if alias == name {
+				return key, nil
+			}
+		}
+	}
+	return key{}, fmt.Errorf("No configuration found.")
 }
 
 func main() {
@@ -43,7 +61,14 @@ func main() {
 	outs, err := drv.Outs()
 	must(err)
 
-	in, out := ins[0], outs[0]
+	// Discover which port to use.
+	if len(os.Args) == 2 && os.Args[1] == "list" {
+		printInPorts(ins)
+		return
+	}
+
+	conf := getConf()
+	in, out := ins[conf.Port], outs[0]
 
 	must(in.Open())
 	must(out.Open())
@@ -53,7 +78,6 @@ func main() {
 
 		// Fetch every message
 		reader.Each(func(pos *reader.Position, msg midi.Message) {
-			// inspect
 			switch midi_message := msg.(type) {
 			case NoteOn:
 				messageHandler(midi_message)
@@ -74,60 +98,73 @@ func main() {
 			os.Exit(0)
 		}
 	}
-
 }
 
 // Knobs/Slider events
 func controlChangeHandler(midi_message ControlChange) {
-	var conf config
-	conf.getConf()
+	conf := getConf()
+	midi_key := fmt.Sprint(midi_message.Controller())
+	key, err := conf.getKey(midi_key)
+	if err != nil {
+		fmt.Printf("Error getting key %s: %v\n", midi_key, err)
+		return
+	}
 
-	for _, controllerConf := range conf.Keys {
-		midi_knob := fmt.Sprint(midi_message.Controller())
-		if controllerConf.Name == midi_knob {
-			if controllerConf.Task == "volume" {
-				updateVolume(controllerConf.MaxValue, midi_message.Value())
-			} else if controllerConf.Task == "brightness" {
-				updateBrightness(controllerConf.MaxValue, midi_message.Value())
-			}
-		}
+	if key.Task == "volume" {
+		updateVolume(key.MaxValue, midi_message.Value())
+	} else if key.Task == "brightness" {
+		updateBrightness(key.MaxValue, midi_message.Value())
+	} else {
+		fmt.Printf("Unknown task: %v\n", key.Task)
 	}
 }
 
 // Button events
 func messageHandler(midi_message NoteOn) {
-	var conf config
-	conf.getConf()
-
-	for _, v := range conf.Keys {
-		midi_key := fmt.Sprint(midi_message.Key())
-		if v.Name == midi_key {
-			command := getCommand(v.Task)
-			name, args := command[0], command[1:]
-
-			cmd := exec.Command(name, args...)
-			cmd.Run()
-		}
+	conf := getConf()
+	midi_key := fmt.Sprint(midi_message.Key())
+	key, err := conf.getKey(midi_key)
+	if err != nil {
+		fmt.Printf("Error getting key %s: %v\n", midi_key, err)
+		return
 	}
 
+	command := getCommand(key.Task)
+	name, args := command[0], command[1:]
+
+	cmd := exec.Command(name, args...)
+	cmd.Run()
 }
 
 // YAML handler
-func (conf *config) getConf() *config {
+func getConf() *config {
+	var conf config
 	yamlFile, err := ioutil.ReadFile(os.Getenv("MIDI_MACRO_PATH"))
 	if err != nil {
-		fmt.Printf("Cannot Read file   #%v ", err)
+		fmt.Printf("Cannot Read file '%s': #%v ", yamlFile, err)
 	}
 	err = yaml.Unmarshal(yamlFile, &conf)
 	if err != nil {
 		fmt.Printf("Unmarshal: %v", err)
 	}
 
-	return conf
+	return &conf
 }
 
 // Get task command
 func getCommand(task string) []string {
 	split := strings.Split(task, ",")
 	return split
+}
+
+func printPort(port midi.Port) {
+	fmt.Printf("[%v] %s\n", port.Number(), port.String())
+}
+
+func printInPorts(ports []midi.In) {
+	fmt.Printf("MIDI IN Ports\n")
+	for _, port := range ports {
+		printPort(port)
+	}
+	fmt.Printf("\n\n")
 }
