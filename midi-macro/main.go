@@ -28,12 +28,16 @@ type key struct {
 	Type     string   `yaml:"type"`
 	Task     string   `yaml:"task"`
 	MaxValue uint8    `yaml:"max_value"`
+	KeyUp    string   `yaml:"key_up"`
+	KeyDown  string   `yaml:"key_down"`
 }
 
 type config struct {
 	Port string `yaml:"port"`
 	Keys []key  `yaml:"keys"`
 }
+
+var prev_values map[string]uint8
 
 func (c config) getKey(name string) (key, error) {
 	for _, key := range c.Keys {
@@ -73,6 +77,8 @@ func main() {
 	must(in.Open())
 	must(out.Open())
 
+    prev_values = make(map[string]uint8)
+
 	rd := reader.New(
 		reader.NoLogger(),
 
@@ -110,10 +116,16 @@ func controlChangeHandler(midi_message ControlChange) {
 		return
 	}
 
+	prev_value, has_prev := prev_values[key.Name]
+	if !has_prev { prev_value = midi_message.Value() }
+	prev_values[key.Name] = midi_message.Value()
+
 	if key.Task == "volume" {
 		updateVolume(key.MaxValue, midi_message.Value())
 	} else if key.Task == "brightness" {
 		updateBrightness(key.MaxValue, midi_message.Value())
+	} else if key.Task == "keyPress" {
+		keyPress(key.MaxValue, midi_message.Value(), prev_value, key);
 	} else {
 		fmt.Printf("Unknown task: %v\n", key.Task)
 	}

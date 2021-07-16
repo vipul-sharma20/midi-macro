@@ -30,3 +30,8 @@ keys:
       type: "knob"
       task: "brightness"
       max_value: 127  # Max value of the knob/slider
+    - name: "21"
+      type: "knob"
+      task: "keyPress"
+      key_up: "ctrl+alt+shift+q"   # Keypress to send if value goes up - xdotool format
+      key_down: "ctrl+alt+shift+a" # Keypress to send if value goes down - xdotool format
