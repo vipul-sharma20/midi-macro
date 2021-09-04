@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"gitlab.com/gomidi/midi"
-	. "gitlab.com/gomidi/midi/midimessage/channel"
+	channel "gitlab.com/gomidi/midi/midimessage/channel"
 	"gitlab.com/gomidi/midi/reader"
 	"gopkg.in/yaml.v2"
 
@@ -85,9 +85,9 @@ func main() {
 		// Fetch every message
 		reader.Each(func(pos *reader.Position, msg midi.Message) {
 			switch midi_message := msg.(type) {
-			case NoteOn:
+			case channel.NoteOn:
 				messageHandler(midi_message)
-			case ControlChange:
+			case channel.ControlChange:
 				controlChangeHandler(midi_message)
 			}
 		}),
@@ -107,7 +107,7 @@ func main() {
 }
 
 // Knobs/Slider events
-func controlChangeHandler(midi_message ControlChange) {
+func controlChangeHandler(midi_message channel.ControlChange) {
 	conf := getConf()
 	midi_key := fmt.Sprint(midi_message.Controller())
 	key, err := conf.getKey(midi_key)
@@ -132,7 +132,7 @@ func controlChangeHandler(midi_message ControlChange) {
 }
 
 // Button events
-func messageHandler(midi_message NoteOn) {
+func messageHandler(midi_message channel.NoteOn) {
 	conf := getConf()
 	midi_key := fmt.Sprint(midi_message.Key())
 	key, err := conf.getKey(midi_key)
