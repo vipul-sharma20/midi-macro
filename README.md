@@ -33,7 +33,7 @@ Use "midimacro [command] --help" for more information about a command.
 midimacro list
 ```
 
-- Add the device to the configuration file, and point an environment variable to it
+- Add the device to the configuration file (sample [here][config-file]), and point an environment variable to it
 ```
 export MIDI_MACRO_PATH=/path/to/midi_macros.yml
 ```
@@ -44,3 +44,4 @@ midimacro run
 ```
 
 [releases]: https://github.com/vipul-sharma20/midi-macro/releases
+[config-file]: ./config/midi_macros.yml
