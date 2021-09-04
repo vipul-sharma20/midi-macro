@@ -11,9 +11,8 @@ import (
 	"gitlab.com/gomidi/midi"
 	channel "gitlab.com/gomidi/midi/midimessage/channel"
 	"gitlab.com/gomidi/midi/reader"
-	"gopkg.in/yaml.v2"
-
 	driver "gitlab.com/gomidi/rtmididrv"
+	"gopkg.in/yaml.v2"
 )
 
 func must(err error) {
