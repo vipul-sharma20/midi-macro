@@ -1,4 +1,4 @@
-port: "Arturia BeatStep"
+port: "Impact LX61+ MIDI1"
 keys:
     - name: "36"  # MIDI controller key name
       type: "button"
