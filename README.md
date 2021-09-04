@@ -4,12 +4,12 @@ Use your MIDI controller (pads, knobs, sliders, keys etc.) to trigger macros.
 
 ## Usage
 
-Build binary
+- Build binary (or get the pre-built binaries from the published [releases][releases])
 ```
 go build -o $GOPATH/bin/midimacro midi-macro/*.go
 ```
 
-Usage doc for `midimacro` command
+- Usage doc for `midimacro` command
 ```
 Tool to map macros to your MIDI controller
 
@@ -28,17 +28,19 @@ Flags:
 Use "midimacro [command] --help" for more information about a command.
 ```
 
-Pick your device from the list of connected device with the command below.
+- Pick your device from the list of connected device with the command below.
 ```
 midimacro list
 ```
 
-Add the device to the configuration file, and point an environment variable to it
+- Add the device to the configuration file, and point an environment variable to it
 ```
 export MIDI_MACRO_PATH=/path/to/midi_macros.yml
 ```
 
-Run the executable binary
+- Run the executable binary
 ```
 midimacro run
 ```
+
+[releases]: https://github.com/vipul-sharma20/midi-macro/releases
